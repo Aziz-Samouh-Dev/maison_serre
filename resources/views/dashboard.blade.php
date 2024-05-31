@@ -1,6 +1,11 @@
 @extends('layouts.app')
 
 @section('content')
+<form action="{{ route('logout') }}" method="POST">
+    @csrf
+    <button type="submit">Logout</button>
+</form>
+
     <div class="container mx-auto p-6">
         <h1 class="text-2xl font-bold mb-6">Dashboard</h1>
 
