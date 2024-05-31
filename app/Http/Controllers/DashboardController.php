@@ -7,23 +7,45 @@ use Illuminate\Support\Facades\Http;
 
 class DashboardController extends Controller
 {
-    private $esp32_ip = 'http://192.168.1.100'; // Replace with your ESP32 IP address
+    private $esp32_ip = 'http://192.168.11.134'; // Replace with your ESP32 IP address
 
     public function index()
     {
-        return view('dashboard');
+        $data = $this->getDataFromESP32();
+        return view('dashboard', ['data' => $data]);
     }
 
-    public function fetchSensorData()
+    public function control(Request $request)
     {
-        $response = Http::get($this->esp32_ip . '/data');
-        return $response->json();
+        $angle1 = $request->input('angle1');
+        $angle2 = $request->input('angle2');
+        $fan = $request->input('fan');
+        $pump = $request->input('pump');
+
+        $this->sendCommandToESP32($angle1, $angle2, $fan, $pump);
+
+        return redirect()->route('dashboard')->with('success', 'Command sent successfully');
     }
 
-    public function updateActuator(Request $request, $id)
+    public function data()
     {
-        $response = Http::get($this->esp32_ip . '/control?' . http_build_query($request->all()));
-        // Handle response or error if needed
-        return redirect()->route('dashboard')->with('success', 'Actuator updated successfully');
+        return Http::get($this->esp32_ip . '/data')->json();
+    }
+
+    private function sendCommandToESP32($angle1, $angle2, $fan, $pump)
+    {
+        $params = [
+            'angle1' => $angle1,
+            'angle2' => $angle2,
+            'fan' => $fan,
+            'pump' => $pump,
+        ];
+
+        Http::get($this->esp32_ip . '/control', $params);
+    }
+
+    private function getDataFromESP32()
+    {
+        return Http::get($this->esp32_ip . '/data')->json();
     }
 }

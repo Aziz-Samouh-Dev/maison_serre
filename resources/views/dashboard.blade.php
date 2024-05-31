@@ -1,72 +1,76 @@
 @extends('layouts.app')
 
 @section('content')
-<form action="{{ route('logout') }}" method="POST">
-    @csrf
-    <button type="submit">Logout</button>
-</form>
+    <form action="{{ route('logout') }}" method="POST">
+        @csrf
+        <button type="submit">Logout</button>
+    </form>
 
-    <div class="container mx-auto p-6">
-        <h1 class="text-2xl font-bold mb-6">Dashboard</h1>
+    <div class="container">
+        <h1 class="mt-5">Dashboard</h1>
 
-        <!-- Sensors Data Widgets -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
-            <!-- Temperature Widget -->
-            <div class="bg-white p-4 rounded-lg shadow-md">
-                <h2 class="text-xl font-semibold mb-2">Temperature</h2>
-                <p class="text-gray-700" id="temperature"></p>
+        @if (session('success'))
+            <div class="alert alert-success">
+                {{ session('success') }}
             </div>
+        @endif
 
-            <!-- Humidity Widget -->
-            <div class="bg-white p-4 rounded-lg shadow-md">
-                <h2 class="text-xl font-semibold mb-2">Humidity</h2>
-                <p class="text-gray-700" id="humidity"></p>
-            </div>
-
-            <!-- Add more widgets for other sensor data -->
-        </div>
-
-        <!-- Actuators Control Buttons -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <!-- Actuator 1 Control -->
-            <div class="bg-white p-4 rounded-lg shadow-md">
-                <h2 class="text-xl font-semibold mb-2">Actuator 1</h2>
-                <form action="{{ route('dashboard.updateActuator', 1) }}" method="POST">
+        <div class="row">
+            <div class="col-md-6">
+                <h3>Controls</h3>
+                <form action="{{ route('dashboard.control') }}" method="POST">
                     @csrf
-                    <input type="hidden" name="status" value="1">
-                    <button type="submit" class="px-4 py-2 bg-blue-500 text-white rounded">Enable</button>
+                    <div class="form-group">
+                        <label for="angle1">Servomotor 1 Angle:</label>
+                        <input type="number" name="angle1" id="angle1" class="form-control" min="0" max="180">
+                    </div>
+                    <div class="form-group">
+                        <label for="angle2">Servomotor 2 Angle:</label>
+                        <input type="number" name="angle2" id="angle2" class="form-control" min="0" max="180">
+                    </div>
+                    <div class="form-group">
+                        <label for="fan">Fan:</label>
+                        <select name="fan" id="fan" class="form-control">
+                            <option value="1">Turn On</option>
+                            <option value="0">Turn Off</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="pump">Pump:</label>
+                        <select name="pump" id="pump" class="form-control">
+                            <option value="1">Turn On</option>
+                            <option value="0">Turn Off</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary mt-3">Send Command</button>
                 </form>
             </div>
-
-            <!-- Actuator 2 Control -->
-            <div class="bg-white p-4 rounded-lg shadow-md">
-                <h2 class="text-xl font-semibold mb-2">Actuator 2</h2>
-                <form action="{{ route('dashboard.updateActuator', 2) }}" method="POST">
-                    @csrf
-                    <input type="hidden" name="status" value="1">
-                    <button type="submit" class="px-4 py-2 bg-blue-500 text-white rounded">Enable</button>
-                </form>
+            <div class="col-md-6">
+                <h3>Sensor Data</h3>
+                <div id="sensor-data">
+                    <!-- Sensor data will be displayed here -->
+                </div>
             </div>
-
-            <!-- Add more controls for other actuators -->
         </div>
     </div>
 
     <script>
         function fetchSensorData() {
-            fetch('/data')
-                .then(response => response.json())
-                .then(data => {
-                    document.getElementById('temperature').innerText = `Temperature: ${data.temperature}°C`;
-                    document.getElementById('humidity').innerText = `Humidity: ${data.humidity}%`;
-                    // Update other sensor data here
-                })
-                .catch(error => console.error('Error fetching sensor data:', error));
+            $.get('{{ route("dashboard.data") }}', function(data) {
+                $('#sensor-data').html(`
+                    <p>Temperature: ${data.temperature}°C</p>
+                    <p>Humidity: ${data.humidity}%</p>
+                    <p>Soil Moisture: ${data.soilMoisture}</p>
+                    <p>Light Intensity: ${data.lightIntensity}</p>
+                    <p>Water Level: ${data.waterLevel}</p>
+                `);
+            });
         }
 
-        document.addEventListener('DOMContentLoaded', () => {
+        $(document).ready(function() {
             fetchSensorData();
             setInterval(fetchSensorData, 5000); // Update every 5 seconds
         });
     </script>
+
 @endsection
