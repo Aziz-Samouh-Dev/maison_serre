@@ -5,8 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login System</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+    <style>
+        body{
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #1e1e2e;
+            color: #fff;
+            font-family: Arial, sans-serif;
+            height: 100vh;
+        }
+    </style>
 </head>
-<body class="bg-gray-100">
+<body class="">
     <div>
         @yield('content')
     </div>
