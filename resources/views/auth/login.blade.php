@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
-    <div class="min-h-screen flex">
+    <div class="min-h-screen w-full flex">
         <!-- Left Side: Login Form -->
         <div class="w-full md:w-1/2 flex items-center justify-center bg-white p-10">
             <div class="w-full max-w-md">

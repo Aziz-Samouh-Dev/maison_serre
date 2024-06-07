@@ -18,4 +18,5 @@ Route::middleware(['auth'])->group(function () {
         return redirect()->route('dashboard');
     });
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/latest-indicator', [DashboardController::class, 'getLatestIndicator']);
 });

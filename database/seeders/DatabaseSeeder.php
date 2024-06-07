@@ -25,5 +25,7 @@ class DatabaseSeeder extends Seeder
             'email' => 'admin@example.com',
             'password' => Hash::make('password123'),
         ]);
+
+        $this->call(IndicatorsTableSeeder::class);
     }
 }

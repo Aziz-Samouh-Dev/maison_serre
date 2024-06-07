@@ -1,117 +1,317 @@
 @extends('layouts.app')
 
 @section('content')
-    <style>
-        .logout-button-container {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-        }
-
-        .chart-container {
-            position: relative;
-            width: 300px;
-            height: 300px;
-            margin: 0 auto; /* Center the chart container */
-        }
-
-        .chart-container canvas {
-            display: block;
-        }
-
-        .chart-container .chart-value {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            font-size: 2em;
-            text-align: center;
-        }
-    </style>
-    <div class="logout-button-container">
-        <form action="{{ route('logout') }}" method="POST">
-            @csrf
-            <button type="submit">Logout</button>
-        </form>
-    </div>
-
-    @if (session('success'))
-        <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4">
-            {{ session('success') }}
+    <div class="min-h-screen w-full flex bg-gray-50">
+        <div class="hidden md:flex w-1/4 bg-cover bg-center" style="background-image: url('{{ asset('bg.png') }}');">
+            <div class="flex flex-col items-center justify-center w-full h-full bg-white bg-opacity-40">
+                <img src="{{ asset('logo.png') }}" alt="Logo" style="width: 50% ; object-fit:cover">
+            </div>
         </div>
-    @endif
-    <h1 class="text-4xl font-bold mb-6 text-center">Dashboard</h1>
+        <div class="w-full md:w-3/4 items-center justify-center">
+            <nav class="bg-white p-4">
+                <div class="container mx-auto flex justify-between items-center">
+                    <span></span>
+                    <form action="{{ route('logout') }}" method="POST">
+                        @csrf
+                        <button
+                            class="flex items-center justify-center bg-red-500 text-white px-4 py-2 rounded hover:bg-red-700">
+                            <svg class="h-6 mr-2" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+                                <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
+                                <g id="SVGRepo_iconCarrier">
+                                    <path d="M15 12L6 12M6 12L8 14M6 12L8 10" stroke="#ffffff" stroke-width="1.5"
+                                        stroke-linecap="round" stroke-linejoin="round"></path>
+                                    <path
+                                        d="M12 21.9827C10.4465 21.9359 9.51995 21.7626 8.87865 21.1213C8.11027 20.3529 8.01382 19.175 8.00171 17M16 21.9983C18.175 21.9862 19.3529 21.8897 20.1213 21.1213C21 20.2426 21 18.8284 21 16V14V10V8C21 5.17157 21 3.75736 20.1213 2.87868C19.2426 2 17.8284 2 15 2H14C11.1715 2 9.75733 2 8.87865 2.87868C8.11027 3.64706 8.01382 4.82497 8.00171 7"
+                                        stroke="#ffffff" stroke-width="1.5" stroke-linecap="round"></path>
+                                    <path
+                                        d="M3 9.5V14.5C3 16.857 3 18.0355 3.73223 18.7678C4.46447 19.5 5.64298 19.5 8 19.5M3.73223 5.23223C4.46447 4.5 5.64298 4.5 8 4.5"
+                                        stroke="#ffffff" stroke-width="1.5" stroke-linecap="round"></path>
+                                </g>
+                            </svg>
+                            <span>Logout</span>
+                        </button>
+                    </form>
+                </div>
+            </nav>
 
-    <div class="chart-container">
-        <canvas id="donutChart"></canvas>
-        <div class="chart-value" id="chartValue">65°</div>
-    </div>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script>
-        const ctx = document.getElementById('donutChart').getContext('2d');
-        const chartValue = document.getElementById('chartValue');
+            @if ($latestIndicator)
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-2  gap-4 mb-4 p-10 bg-gray-50">
+                    <div class="w-full shadow-lg rounded-lg p-4 sm:py-2 sm:px-4 bg-white">
+                        <div class="flex items-center justify-center">
+                            <div class="flex-shrink-0">
+                                <span class="text-2xl sm:text-3xl leading-none font-bold text-gray-900"
+                                    id="temp">...</span>
+                                <h3 class="text-base font-normal text-gray-500">Temperature</h3>
+                            </div>
+                            <div class="ml-5 w-0 flex items-center justify-end flex-1 text-green-500 text-base font-bold">
+                                <svg class="w-24 h-24" viewBox="-102.4 -102.4 1228.80 1228.80" version="1.1"
+                                    xmlns="http://www.w3.org/2000/svg" fill="#000000">
+                                    <g id="SVGRepo_bgCarrier" stroke-width="0">
+                                        <path transform="translate(-102.4, -102.4), scale(38.4)"
+                                            d="M16,29.880605483427644C19.009385592122747,28.9483404024362,19.080122368956935,24.571968719787957,21.484006365138455,22.535584287463273C23.8650860290363,20.518517920122505,28.22586253247854,21.21125406465382,29.562569086486583,18.391446857670143C30.943154247941187,15.479076916450424,29.325854015637884,12.025525990612946,27.816063532847103,9.17799253854901C26.25187116583675,6.227854660946372,24.339192865022884,2.4219344142195283,21.004437316247937,2.2504214765327113C17.59974363346234,2.0753114851353445,16.385165950855907,7.103011734269829,13.244211736514139,8.42853397327453C10.41659800046249,9.621822583894115,6.616490692549759,7.2019394510832075,4.354937569830184,9.27672007121145C1.9896417267683932,11.44667572104962,1.9601082240070313,15.219648648624018,2.371824220959729,18.403015087682398C2.8004243314180295,21.716928604543934,4.107697051378716,24.97422919599849,6.663545275807502,27.126753459649585C9.222509359087917,29.281901886080043,12.80424321275985,30.87060572396972,16,29.880605483427644"
+                                            fill="#ece37e" strokewidth="0"></path>
+                                    </g>
+                                    <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
+                                    <g id="SVGRepo_iconCarrier">
+                                        <path
+                                            d="M570.8 742c0.5-2.9 0.9-5.8 0.9-8.8V418.5H458.4v314.6c0 3 0.4 5.9 0.9 8.8-34.3 19.5-57.5 56.3-57.5 98.5 0 62.6 50.7 113.3 113.3 113.3 62.6 0 113.3-50.7 113.3-113.3-0.1-42.2-23.3-79-57.6-98.4z"
+                                            fill="#F59558"></path>
+                                        <path
+                                            d="M594.3 730.3V194.8c0-43.7-35.6-79.3-79.3-79.3s-79.3 35.6-79.3 79.3v535.4c-35.2 25.4-56.6 66.5-56.6 110.2 0 75 61 135.9 135.9 135.9s136-60.8 136-135.8c0-43.7-21.4-84.8-56.7-110.2zM515 931.1c-50 0-90.6-40.6-90.6-90.6 0-32.1 17.4-62.1 45.3-78.4 7-4 11.3-11.5 11.3-19.6v-40.8h11.3c6.3 0 11.3-5.1 11.3-11.3 0-6.3-5.1-11.3-11.3-11.3H481v-45.3h11.3c6.3 0 11.3-5.1 11.3-11.3 0-6.3-5.1-11.3-11.3-11.3H481v-45.3h11.3c6.3 0 11.3-5.1 11.3-11.3 0-6.3-5.1-11.3-11.3-11.3H481V498h11.3c6.3 0 11.3-5.1 11.3-11.3 0-6.3-5.1-11.3-11.3-11.3H481v-45.3h11.3c6.3 0 11.3-5.1 11.3-11.3 0-6.3-5.1-11.3-11.3-11.3H481v-45.3h11.3c6.3 0 11.3-5.1 11.3-11.3 0-6.3-5.1-11.3-11.3-11.3H481v-45.3h11.3c6.3 0 11.3-5.1 11.3-11.3 0-6.3-5.1-11.3-11.3-11.3H481V226h11.3c6.3 0 11.3-5.1 11.3-11.3 0-6.3-5.1-11.3-11.3-11.3H481v-8.5c0-18.7 15.2-34 34-34 18.7 0 34 15.2 34 34v547.7c0 8.1 4.3 15.6 11.3 19.6 28 16.2 45.3 46.2 45.3 78.4 0.1 49.9-40.6 90.5-90.6 90.5z"
+                                            fill="#211F1E"></path>
+                                    </g>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="w-full shadow-lg rounded-lg p-4 sm:py-2 sm:px-4 bg-white dark:bg-gray-800">
+                        <div class="flex items-center justify-center">
+                            <div class="flex-shrink-0">
+                                <span class="text-2xl sm:text-3xl leading-none font-bold text-gray-900"
+                                    id="humidity">...</span>
+                                <h3 class="text-base font-normal text-gray-500">Humidity</h3>
+                            </div>
+                            <div class="ml-5 w-0 flex items-center justify-end flex-1 text-green-500 text-base font-bold">
+                                <svg class="w-24 h-24" viewBox="-2.4 -2.4 28.80 28.80" fill="none"
+                                    xmlns="http://www.w3.org/2000/svg">
+                                    <g id="SVGRepo_bgCarrier" stroke-width="0">
+                                        <path transform="translate(-2.4, -2.4), scale(0.8999999999999999)"
+                                            d="M16,29.448754673529614C18.734727547478627,30.03214750558332,21.929039121977738,28.726974127776987,23.63950020285735,26.514869960648717C25.27885004307835,24.394732499778197,23.823023173373073,21.33560864312032,24.3109391690126,18.700387830205734C24.70311426717021,16.582260959580857,26.485344510607028,14.820968608855972,26.19997285216337,12.685827919291189C25.888694760626137,10.356856210482098,24.189659289509564,8.58703841246944,22.71477063236674,6.757911101499634C20.676952755490856,4.230650270436614,19.245135653693822,0.1300667047797996,16.000000000000004,0.03602630566609477C12.776942293330874,-0.0573742992536591,10.828582215904722,3.7070825938040337,8.996397397307138,6.3603679994886875C7.6361705325570295,8.33018570129901,7.973921668314752,10.889405050551986,6.996439946535505,13.074566002413585C5.827556923932559,15.687604672473494,1.8836575366974857,17.57681631210714,2.759948284785338,20.301953581415514C3.6353087787159106,23.024197895070227,8.058143355110596,22.067490965527135,10.41083181611507,23.692830038771916C12.666367638783827,25.25105186220945,13.318887493306779,28.876799408817234,16,29.448754673529614"
+                                            fill="#7ed0ec" strokewidth="0"></path>
+                                    </g>
+                                    <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
+                                    <g id="SVGRepo_iconCarrier">
+                                        <path
+                                            d="M22 13.3529C22 15.6958 20.5562 17.7055 18.5 18.5604M14.381 8.02721C14.9767 7.81911 15.6178 7.70588 16.2857 7.70588C16.9404 7.70588 17.5693 7.81468 18.1551 8.01498M7.11616 10.6089C6.8475 10.5567 6.56983 10.5294 6.28571 10.5294C3.91878 10.5294 2 12.4256 2 14.7647C2 16.6611 3.26124 18.2664 5 18.8061M7.11616 10.6089C6.88706 9.9978 6.7619 9.33687 6.7619 8.64706C6.7619 5.52827 9.32028 3 12.4762 3C15.4159 3 17.8371 5.19371 18.1551 8.01498M7.11616 10.6089C7.68059 10.7184 8.20528 10.9374 8.66667 11.2426M18.1551 8.01498C19.0446 8.31916 19.8345 8.83436 20.4633 9.5"
+                                            stroke="#1d1d2c" stroke-width="1.5" stroke-linecap="round"></path>
+                                        <path
+                                            d="M11 20.3336C11 21.2541 10.3284 22.0002 9.5 22.0002C8.67157 22.0002 8 21.2541 8 20.3336C8 19.8287 8.45122 19.1758 8.85871 18.689C9.19832 18.2833 9.80168 18.2833 10.1413 18.689C10.5488 19.1758 11 19.8287 11 20.3336Z"
+                                            stroke="#1d1d2c" stroke-width="1.5"></path>
+                                        <path
+                                            d="M16 20.3336C16 21.2541 15.3284 22.0002 14.5 22.0002C13.6716 22.0002 13 21.2541 13 20.3336C13 19.8287 13.4512 19.1758 13.8587 18.689C14.1983 18.2833 14.8017 18.2833 15.1413 18.689C15.5488 19.1758 16 19.8287 16 20.3336Z"
+                                            stroke="#1d1d2c" stroke-width="1.5"></path>
+                                        <path
+                                            d="M13.5 15.3336C13.5 16.2541 12.8284 17.0002 12 17.0002C11.1716 17.0002 10.5 16.2541 10.5 15.3336C10.5 14.8287 10.9512 14.1758 11.3587 13.689C11.6983 13.2833 12.3017 13.2833 12.6413 13.689C13.0488 14.1758 13.5 14.8287 13.5 15.3336Z"
+                                            stroke="#1d1d2c" stroke-width="1.5"></path>
+                                    </g>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="w-full shadow-lg rounded-lg p-4 sm:py-2 sm:px-4 bg-white dark:bg-gray-800">
+                        <div class="flex items-center justify-center">
+                            <div class="flex-shrink-0">
+                                <span class="text-2xl sm:text-3xl leading-none font-bold text-gray-900"
+                                    id="soil_moisture">...</span>
+                                <h3 class="text-base font-normal text-gray-500">Soil Moisture</h3>
+                            </div>
+                            <div class="ml-5 w-0 flex items-center justify-end flex-1 text-green-500 text-base font-bold">
 
-        function fetchTemperatureData() {
-            fetch('/get_temperature')
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Network response was not ok');
+                                <svg class="w-24 h-24" fill="#1d1d2d" viewBox="-3.2 -3.2 38.40 38.40" id="Layer_1"
+                                    data-name="Layer 1" xmlns="http://www.w3.org/2000/svg">
+                                    <g id="SVGRepo_bgCarrier" stroke-width="0">
+                                        <path transform="translate(-3.2, -3.2), scale(1.2)"
+                                            d="M16,28.71051814324326C19.192970667933952,28.74416913901543,22.604694388857116,28.837243171609003,25.101796566353205,26.84709875701308C27.63269721094455,24.830017587038178,29.33930785375791,21.526881801762755,29.0590840183224,18.302668855768957C28.802976053982956,15.355929464696004,24.999268486462267,14.204393699385044,23.769200454761688,11.51445002605518C22.279102242585015,8.255865821616252,24.30963121325976,3.3572872358439056,21.320967639136246,1.3807615618244C18.419040690801786,-0.5384016277608494,14.615595117194138,2.0294938211175104,11.386859488531845,3.325500611969895C8.286454986373535,4.5699955943141894,5.0250643834756135,5.808742972360518,3.245525774543152,8.636200872560337C1.4219584474315001,11.53361474136154,1.129634602116668,15.147728004522257,1.8381891017572745,18.497109357051368C2.527223831484849,21.754219538646517,4.35754657717886,24.70954498102898,7.05777294250319,26.656931221564967C9.615433832237219,28.5015001394108,12.846754159339314,28.677285810883205,16,28.71051814324326"
+                                            fill="#4def4f" strokewidth="0"></path>
+                                    </g>
+                                    <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
+                                    <g id="SVGRepo_iconCarrier">
+                                        <defs>
+                                            <style>
+                                                .cls-1 {
+                                                    fill: none;
+                                                }
+                                            </style>
+                                        </defs>
+                                        <path
+                                            d="M24.5,30a5.202,5.202,0,0,1-4.626-8.08L23.49,16.5382a1.217,1.217,0,0,1,2.02,0L29.06,21.8154A5.4921,5.4921,0,0,1,30,24.751,5.385,5.385,0,0,1,24.5,30Zm0-11.38-2.9356,4.3672A3.2079,3.2079,0,0,0,24.5,28,3.3855,3.3855,0,0,0,28,24.751a3.4354,3.4354,0,0,0-.63-1.867Z"
+                                            transform="translate(0 0)"></path>
+                                        <path
+                                            d="M11,16V11h1a4.0045,4.0045,0,0,0,4-4V4H13a3.9779,3.9779,0,0,0-2.7468,1.1067A6.0034,6.0034,0,0,0,5,2H2V5a6.0066,6.0066,0,0,0,6,6H9v5H2v2H16V16ZM13,6h1V7a2.002,2.002,0,0,1-2,2H11V8A2.002,2.002,0,0,1,13,6ZM8,9A4.0045,4.0045,0,0,1,4,5V4H5A4.0045,4.0045,0,0,1,9,8V9Z"
+                                            transform="translate(0 0)"></path>
+                                        <rect x="2" y="21" width="14" height="2"></rect>
+                                        <rect x="2" y="26" width="14" height="2"></rect>
+                                        <rect id="_Transparent_Rectangle_" data-name="<Transparent Rectangle>"
+                                            class="cls-1" width="32" height="32"></rect>
+                                    </g>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="w-full shadow-lg rounded-lg p-4 sm:py-2 sm:px-4 bg-white dark:bg-gray-800">
+                        <div class="flex items-center justify-center">
+                            <div class="flex-shrink-0">
+                                <span class="text-2xl sm:text-3xl leading-none font-bold text-gray-900"
+                                    id="light">...</span>
+                                <h3 class="text-base font-normal text-gray-500">Light</h3>
+                            </div>
+                            <div class="ml-5 w-0 flex items-center justify-end flex-1 text-green-500 text-base font-bold">
+
+                                <svg class="w-24 h-24" viewBox="-12.8 -12.8 153.60 153.60"
+                                    xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+                                    aria-hidden="true" role="img" preserveAspectRatio="xMidYMid meet"
+                                    fill="#000000">
+                                    <g id="SVGRepo_bgCarrier" stroke-width="0">
+                                        <path transform="translate(-12.8, -12.8), scale(4.8)"
+                                            d="M16,31.08745993580669C19.441205605136922,31.774536045053985,22.826193463200006,29.59379061221773,25.48112233732508,27.299161607332376C28.102297084063736,25.033705963922102,30.050542791107915,21.991910097216046,30.498568955375006,18.55648888849476C30.93250964679299,15.229073720536404,29.469298861411705,12.097509449526278,27.84667698001533,9.16031785658561C26.18828801083658,6.158382412509415,24.425306057772435,2.878923298460737,21.197465347001327,1.7200813207159786C17.976092305173566,0.5635613306221887,14.473676830040933,1.8281361551474467,11.355668828158926,3.239804976897423C8.469160099218872,4.546663193391515,5.769797452193389,6.447784239048718,4.421693845986944,9.315261825220652C3.144941418807915,12.030972213629655,3.462282254697705,15.193981771192355,4.39458427568001,18.046347914535882C5.218913625767286,20.568373048275184,7.4759667301455455,22.074295545223777,9.239869739543314,24.05640952430408C11.468461045579254,26.56069800151396,12.712561457824748,30.43108518168691,16,31.08745993580669"
+                                            fill="#7ed0ec" strokewidth="0"></path>
+                                    </g>
+                                    <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
+                                    <g id="SVGRepo_iconCarrier">
+                                        <ellipse cx="64" cy="116.87" rx="12.09" ry="7.13"
+                                            fill="#424242">
+                                        </ellipse>
+                                        <path
+                                            d="M64 4C42.92 4 25.82 19.67 25.82 38.99c0 5.04 1.52 10.43 3.75 15.18c3.13 6.68 6.54 11.62 7.54 13.44c2.78 5.06 2.38 10.39 3.15 13.73c1.45 6.24 5.79 8.5 23.73 8.5s21.8-2.15 23.41-7.9c1.1-3.91.03-8.18 2.8-13.23c1-1.82 5.07-7.85 8.21-14.54c2.23-4.75 3.75-10.14 3.75-15.18C102.18 19.67 85.08 4 64 4z"
+                                            fill="#ffd600"> </path>
+                                        <ellipse cx="64" cy="86.13" rx="21.94" ry="4.46"
+                                            fill="#b26500">
+                                        </ellipse>
+                                        <ellipse cx="64" cy="86.13" rx="21.94" ry="4.46"
+                                            fill="#b26500">
+                                        </ellipse>
+                                        <ellipse cx="64" cy="86.13" rx="15.99" ry="2.06"
+                                            fill="#ffa000">
+                                        </ellipse>
+                                        <g fill="none" stroke-width="2" stroke-miterlimit="10">
+                                            <path
+                                                d="M53.3 56.77c-.62 1.56-2.23 4.77-1.39 6.21c1.95 3.35 6.6 4.55 6.6 7.63c0 4.7-3.42 19.93-3.42 19.93"
+                                                stroke="#b26500"> </path>
+                                            <path
+                                                d="M74.03 56.21s2.24 4.8 1.29 6.95c-.71 1.6-4.98 4.18-5.53 4.61c-2.55 2 .84 22.78.84 22.78"
+                                                stroke="#b26500"> </path>
+                                            <path
+                                                d="M53.3 56.77c3.44-6.8 5.21-22.32.84-21.53c-7.37 1.33 1.71 26.83 6.18 23.9s10.01-23.85 3.21-23.93c-6.8-.08.46 26.66 5.08 23.69c3.65-2.35 12.56-23.66 5.24-23.66c-6.23 0 .19 20.97.19 20.97"
+                                                stroke="#ffffff"> </path>
+                                        </g>
+                                        <path
+                                            d="M85.89 87.06S80.13 89.84 64 89.84s-21.89-2.78-21.89-2.78s-.36 5.14.83 7.47c1.43 2.8 2.53 3.77 2.53 3.77l.6 2.85l-.24.75c-.31.98-.09 2.06.6 2.83l.52.58l.58 2.74l-.2.55c-.38 1.05-.12 2.22.66 3.02l.38.39l.47 2.24s2.38 5.08 15.16 5.08s15.16-5.08 15.16-5.08l.04-.19l.26-.26c.52-.51.69-1.27.44-1.95l-.15-.39l.62-2.96l1.09-1.15c.54-.57.66-1.41.31-2.11l-.5-.99l.63-2.97l.4-.31c.59-.65.6-1.63.34-2.3c-.2-.53-.04-1.13.37-1.52c.63-.6 1.44-1.51 2.04-2.64c1.23-2.29.84-7.45.84-7.45z"
+                                            fill="#82aec0"> </path>
+                                        <path
+                                            d="M45.47 98.3l.54 2.87c5.82-.03 13.59.26 28.5-2.11c2.69-.61 5.92-1.82 2.35-1.32c0-.01-13.69 1.3-31.39.56z"
+                                            fill="#2f7889"> </path>
+                                        <path
+                                            d="M47.47 108.07c6.44-.11 19.6-.75 33.74-3.82l.63-2.97c-14.79 3.36-28.7 3.96-34.95 4.04l.58 2.75z"
+                                            fill="#2f7889"> </path>
+                                        <path
+                                            d="M80.31 108.49c-13.09 2.84-25.34 3.57-31.97 3.73l.43 2.04s.21 6.33 15.16 6.33s15.16-6.33 15.16-6.33s-6.38 1.82-14.23.93a.63.63 0 0 1-.01-1.26c4.69-.62 10.29-1.54 14.84-2.48l.62-2.96z"
+                                            fill="#2f7889"> </path>
+                                        <path d="M42.18 87.06s6.46 2.78 21.76 2.78s21.88-2.78 21.88-2.78" fill="none"
+                                            stroke="#82aec0" stroke-width="3.997" stroke-linecap="round"
+                                            stroke-miterlimit="10">
+                                        </path>
+                                        <path
+                                            d="M49.88 10.32c3.91-.96 8-.48 10.8 2.92c.79.96 1.4 2.1 1.54 3.34c.28 2.39-1.2 4.65-2.96 6.31c-5.02 4.74-12.15 7.04-15.39 13.58c-.76 1.53-1.36 3.18-2.52 4.43c-1.16 1.25-3.09 2.01-4.6 1.21c-.8-.42-1.35-1.21-1.8-2c-2.84-5.06-2.63-11.51-.13-16.75c2.75-5.74 8.78-11.5 15.06-13.04z"
+                                            fill="#ffff8d"> </path>
+                                        <path
+                                            d="M46.45 91.93c-.88-.4-.53-1.72.43-1.65c3.22.25 8.7.56 15.95.56c7.64 0 14.36-.57 18.28-.99c.97-.1 1.34 1.23.45 1.64c-3.02 1.42-8.55 3.04-18.03 3.04c-9.25 0-14.35-1.37-17.08-2.6z"
+                                            fill="#ffd600"> </path>
+                                        <path
+                                            d="M51.94 102.03c-.67.24-1.36.57-1.7 1.19c-.12.23-.19.49-.14.75c.08.38.43.65.78.82c.7.34 1.49.43 2.26.44c1.59.02 3.17-.28 4.74-.58c.47-.09.95-.18 1.37-.41c.42-.23.78-.62.85-1.09c.1-.63-.35-1.24-.9-1.54c-1.9-1.05-5.34-.27-7.26.42z"
+                                            fill="#94d1e0"> </path>
+                                        <path
+                                            d="M53.43 108.62c-.67.24-1.36.57-1.7 1.19c-.12.23-.19.49-.14.75c.08.38.43.65.78.82c.7.34 1.49.43 2.26.44c1.59.02 3.17-.28 4.74-.58c.47-.09.95-.18 1.37-.41c.42-.23.78-.62.85-1.09c.1-.63-.35-1.24-.9-1.54c-1.9-1.04-5.35-.26-7.26.42z"
+                                            fill="#94d1e0"> </path>
+                                        <path
+                                            d="M50.01 84.2c.91.09 1.87.01 2.64-.48s1.26-1.49.95-2.35c-.16-.45-.51-.81-.85-1.15c-.75-.74-1.5-1.48-2.24-2.22c-.83-.83-1.66-1.65-2.56-2.4c-1.39-1.16-3.26-2.25-5.09-1.4c-1.56.72-1.93 2.14-1.24 3.63c1.47 3.13 4.89 6.01 8.39 6.37z"
+                                            fill="#ffff8d"> </path>
+                                    </g>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="w-full shadow-lg rounded-lg p-4 sm:py-2 sm:px-4 bg-white dark:bg-gray-800">
+                        <div class="flex items-center justify-center">
+                            <div class="flex-shrink-0">
+                                <span class="text-2xl sm:text-3xl leading-none font-bold text-gray-900"
+                                    id="water_level">...</span>
+                                <h3 class="text-base font-normal text-gray-500">Water Level</h3>
+
+                            </div>
+                            <div class="ml-5 w-0 flex items-center justify-end flex-1 text-green-500 text-base font-bold">
+
+                                <svg class="w-24 h-24" version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg"
+                                    xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="-122.88 -122.88 757.76 757.76"
+                                    xml:space="preserve" fill="#000000">
+                                    <g id="SVGRepo_bgCarrier" stroke-width="0">
+                                        <path transform="translate(-122.88, -122.88), scale(23.68)"
+                                            d="M16,30.877494998276234C19.99831040283888,30.06822762619596,21.03638527721075,25.219660084512395,23.335552331119885,21.84990777682239C25.270492287288533,19.01398144800045,28.668556150233552,16.627723380671807,28.02321883284182,13.2557787602391C27.36553849571871,9.819340768880114,23.59451217024566,8.293697639337452,20.448197441424085,6.763222836704568C17.278751531749762,5.221496238716951,13.892953534186455,3.5324844332457395,10.59606711399654,4.778617736572913C7.002421603707968,6.136917896171618,4.736672342080334,9.505770957745344,3.5366592864838324,13.155323813038857C2.148214431120099,17.37794694424429,1.1173296619451882,22.19345041272763,3.6743445998754627,25.82938218213401C6.361390832921773,29.65021115722983,11.421760385843873,31.804141398383468,16,30.877494998276234"
+                                            fill="#7ed0ec" strokewidth="0"></path>
+                                    </g>
+                                    <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
+                                    <g id="SVGRepo_iconCarrier">
+                                        <polygon style="fill:#AFB6BB;"
+                                            points="450.042,460.402 466.21,503.518 45.832,503.518 62,460.402 115.895,460.402 396.147,460.402 ">
+                                        </polygon>
+                                        <path style="fill:#546A79;"
+                                            d="M396.147,406.508v53.895H115.895v-53.895c0-5.928,4.851-10.779,10.779-10.779h258.695 C391.297,395.729,396.147,400.579,396.147,406.508z">
+                                        </path>
+                                        <path style="fill:#00B4D7;"
+                                            d="M78.168,88.529c25.438,0,25.438,21.558,50.769,21.558c25.438,0,25.438-21.558,50.769-21.558 c25.438,0,25.438,21.558,50.877,21.558c25.331,0,25.331-21.558,50.769-21.558c25.331,0,25.331,21.558,50.769,21.558 s25.438-21.558,50.877-21.558s25.438,21.558,50.877,21.558v285.642h-48.505H126.674H78.168L78.168,88.529L78.168,88.529z">
+                                        </path>
+                                        <path style="fill:#F1F2F2;"
+                                            d="M433.874,18.465v91.621c-25.438,0-25.438-21.558-50.877-21.558s-25.438,21.558-50.877,21.558 s-25.438-21.558-50.769-21.558c-25.438,0-25.438,21.558-50.769,21.558c-25.438,0-25.438-21.558-50.877-21.558 c-25.331,0-25.331,21.558-50.769,21.558c-25.331,0-25.331-21.558-50.769-21.558V18.465c0-5.928,4.851-10.779,10.779-10.779h334.147 C429.023,7.686,433.874,12.537,433.874,18.465z">
+                                        </path>
+                                        <path style="fill:#00AAD5;"
+                                            d="M117.288,107.967c-14.377-5.314-18.414-19.439-39.12-19.439v307.2h48.505h258.695h48.505v-36.696 C289.119,337.797,169.519,239.974,117.288,107.967z">
+                                        </path>
+                                        <path
+                                            d="M455.622,452.716H404.21v-45.811c0-0.917-0.088-1.812-0.216-2.695h37.942v-94.32h-16.168v78.152H86.231v-32.337h223.663 v-16.168H86.231V18.863c0-1.461,1.234-2.695,2.695-2.695h334.147c1.461,0,2.695,1.234,2.695,2.695v82.419 c-4.71-1.471-8.04-4.281-12.127-7.745c-6.673-5.656-14.981-12.695-30.665-12.695s-23.991,7.04-30.664,12.695 c-6.072,5.145-10.459,8.862-20.212,8.862c-9.764,0-14.146-3.722-20.213-8.874c-6.654-5.65-14.936-12.684-30.557-12.684 c-15.702,0-24.006,7.052-30.678,12.718c-6.042,5.132-10.408,8.84-20.091,8.84c-9.755,0-14.141-3.718-20.213-8.862 c-6.673-5.656-14.981-12.695-30.664-12.695c-15.621,0-23.903,7.033-30.557,12.685c-6.065,5.151-10.448,8.873-20.211,8.873v16.168 c15.702,0,24.006-7.052,30.678-12.718c6.042-5.132,10.408-8.84,20.09-8.84c9.754,0,14.14,3.718,20.212,8.862 c6.674,5.656,14.982,12.695,30.665,12.695c15.621,0,23.903-7.033,30.557-12.685c6.066-5.151,10.448-8.873,20.212-8.873 c9.682,0,14.048,3.708,20.091,8.84c6.672,5.666,14.977,12.718,30.679,12.718c15.684,0,23.991-7.04,30.664-12.695 c6.072-5.145,10.458-8.862,20.212-8.862c9.755,0,14.141,3.718,20.213,8.862c5.422,4.595,11.923,10.103,22.58,12.009v159.679h16.168 V18.863C441.936,8.463,433.474,0,423.073,0H88.926C78.525,0,70.063,8.463,70.063,18.863v385.347h37.942 c-0.127,0.883-0.216,1.777-0.216,2.695v45.811H56.377L34.145,512h443.71L455.622,452.716z M123.957,406.905 c0-1.461,1.234-2.695,2.695-2.695h258.695c1.461,0,2.695,1.234,2.695,2.695v45.811H123.957V406.905z M57.475,495.832l10.105-26.947 h376.837l10.105,26.947H57.475z">
+                                        </path>
+                                        <rect x="320.673" y="339.537" width="32.337" height="16.168"></rect>
+                                        <g>
+                                            <rect x="126.652" y="156.295" style="fill:#FFFFFF;" width="32.337"
+                                                height="16.168">
+                                            </rect>
+                                            <rect x="158.989" y="188.632" style="fill:#FFFFFF;" width="32.337"
+                                                height="16.168">
+                                            </rect>
+                                            <rect x="363.789" y="145.516" style="fill:#FFFFFF;" width="32.337"
+                                                height="16.168">
+                                            </rect>
+                                        </g>
+                                        <rect x="137.431" y="274.863" width="32.337" height="16.168"></rect>
+                                        <rect x="363.789" y="339.537" style="fill:#FFFFFF;" width="32.337"
+                                            height="16.168">
+                                        </rect>
+                                        <rect x="371.873" y="185.937" width="16.168" height="118.568"></rect>
+                                    </g>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            @else
+                <p>No data available.</p>
+            @endif
+
+
+            <script>
+                $(document).ready(function() {
+                    function fetchIndicatorData() {
+                        $.ajax({
+                            url: '/latest-indicator',
+                            type: 'GET',
+                            dataType: 'json',
+                            success: function(data) {
+                                $('#temp').text(data.temp + '°C');
+                                $('#humidity').text(data.humidity + '%');
+                                $('#soil_moisture').text(data.soil_moisture + '%');
+                                $('#light').text(data.light + 'Lux');
+                                $('#water_level').text(data.water_level + '%');
+                            },
+                            error: function(xhr, status, error) {
+                                console.log("Error: " + xhr.status + " - " + error);
+                            }
+                        });
                     }
-                    return response.json();
-                })
-                .then(data => {
-                    const temperature = data.temperature;
-                    if (temperature !== undefined) {
-                        updateChart(temperature);
-                    } else {
-                        console.error('Error fetching data: temperature not found in the response.');
-                        updateChart(0);
-                    }
-                })
-                .catch(error => {
-                    console.error('Error fetching temperature:', error);
-                    updateChart(0);
+
+                    fetchIndicatorData();
+                    setInterval(fetchIndicatorData, 600); // Refresh every minute
                 });
-        }
+            </script>
+        </div>
 
-        function updateChart(temperature) {
-            const datasets = [{
-                data: [temperature, 100 - temperature],
-                backgroundColor: ['#00FFB0', '#2e2e3e'],
-                borderWidth: 0
-            }];
-            const options = {
-                responsive: true,
-                cutout: '80%',
-                plugins: {
-                    tooltip: {
-                        enabled: false
-                    },
-                    legend: {
-                        display: false
-                    }
-                },
-                animation: {
-                    animateScale: true,
-                    animateRotate: true
-                }
-            };
-            const chart = new Chart(ctx, {
-                type: 'doughnut',
-                data: {
-                    datasets
-                },
-                options: options
-            });
-            chart.data = {
-                datasets
-            };
-            chart.options = options;
-            chart.update();
-            chartValue.innerText = `${temperature}°`;
-        }
-
-        fetchTemperatureData();
-        setInterval(fetchTemperatureData, 5000);
-    </script>
+    </div>
 @endsection
